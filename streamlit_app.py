@@ -1,151 +1,210 @@
-import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
 
-# Set the title and favicon that appear in the Browser's tab bar.
+import streamlit as st
+
 st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+    page_title="Mining Game",
+    page_icon="⛏️",
+    layout="centered"
 )
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
-
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
-
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
-
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
-
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
-
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
-
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
+picaretas = [
+    {"nome": "Wood Pickaxe", "preco": 0, "poder": 1, "cor": (130,75,30)},
+    {"nome": "Stone Pickaxe", "preco": 180, "poder": 3, "cor": (140,140,140)},
+    {"nome": "Copper Pickaxe", "preco": 650, "poder": 6, "cor": (190,110,60)},
+    {"nome": "Gold Pickaxe", "preco": 1800, "poder": 10, "cor": (255,215,55)},
+    {"nome": "Iron Pickaxe", "preco": 4200, "poder": 15, "cor": (190,190,210)},
+    {"nome": "Diamond Pickaxe", "preco": 9000, "poder": 22, "cor": (0,220,255)},
+    {"nome": "Obsidian Pickaxe", "preco": 18000, "poder": 31, "cor": (55,35,80)},
+    {"nome": "Ruby Pickaxe", "preco": 35000, "poder": 42, "cor": (220,20,60)},
+    {"nome": "Emerald Pickaxe", "preco": 65000, "poder": 56, "cor": (0,200,90)},
+    {"nome": "Amethyst Pickaxe", "preco": 110000, "poder": 73, "cor": (150,70,220)},
+    {"nome": "Sapphire Pickaxe", "preco": 180000, "poder": 94, "cor": (30,100,255)},
+    {"nome": "Titanium Pickaxe", "preco": 290000, "poder": 120, "cor": (160,180,190)},
+    {"nome": "Cobalt Pickaxe", "preco": 460000, "poder": 151, "cor": (20,70,180)},
+    {"nome": "Uranium Pickaxe", "preco": 720000, "poder": 189, "cor": (120,255,20)},
+    {"nome": "Plasma Pickaxe", "preco": 1100000, "poder": 235, "cor": (0,255,220)},
+    {"nome": "Void Pickaxe", "preco": 1650000, "poder": 290, "cor": (65,0,110)},
+    {"nome": "Meteor Pickaxe", "preco": 2400000, "poder": 355, "cor": (110,75,65)},
+    {"nome": "Magma Pickaxe", "preco": 3400000, "poder": 430, "cor": (255,75,0)},
+    {"nome": "Crystal Pickaxe", "preco": 4800000, "poder": 520, "cor": (130,220,255)},
+    {"nome": "Ancient Pickaxe", "preco": 6700000, "poder": 630, "cor": (180,150,90)},
+    {"nome": "Dragon Pickaxe", "preco": 9200000, "poder": 760, "cor": (180,20,20)},
+    {"nome": "Celestial Pickaxe", "preco": 12500000, "poder": 910, "cor": (255,240,160)},
+    {"nome": "Quantum Pickaxe", "preco": 17000000, "poder": 1080, "cor": (0,255,180)},
+    {"nome": "Galactic Pickaxe", "preco": 23000000, "poder": 1280, "cor": (100,50,220)},
+    {"nome": "Eternity Pickaxe", "preco": 31000000, "poder": 1510, "cor": (255,100,200)},
+    {"nome": "Infinity Pickaxe", "preco": 42000000, "poder": 1780, "cor": (255,255,255)}
 ]
 
-st.header('GDP over time', divider='gray')
+minerios = [
+    {"nome": "Stone", "preco": 0, "multiplicador": 1, "cor": (110,110,110)},
+    {"nome": "Coal", "preco": 100, "multiplicador": 1.5, "cor": (30,30,30)},
+    {"nome": "Copper", "preco": 400, "multiplicador": 2, "cor": (190,110,60)},
+    {"nome": "Gold", "preco": 1200, "multiplicador": 2.5, "cor": (255,215,55)},
+    {"nome": "Iron", "preco": 3000, "multiplicador": 3, "cor": (190,190,210)},
+    {"nome": "Diamond", "preco": 7000, "multiplicador": 3.5, "cor": (0,220,255)},
+    {"nome": "Obsidian", "preco": 15000, "multiplicador": 4, "cor": (55,35,80)},
+    {"nome": "Ruby", "preco": 30000, "multiplicador": 4.5, "cor": (220,20,60)},
+    {"nome": "Emerald", "preco": 55000, "multiplicador": 5, "cor": (0,200,90)},
+    {"nome": "Amethyst", "preco": 95000, "multiplicador": 5.5, "cor": (150,70,220)},
+    {"nome": "Sapphire", "preco": 160000, "multiplicador": 6, "cor": (30,100,255)},
+    {"nome": "Titanium", "preco": 260000, "multiplicador": 6.5, "cor": (160,180,190)},
+    {"nome": "Cobalt", "preco": 420000, "multiplicador": 7, "cor": (20,70,180)},
+    {"nome": "Uranium", "preco": 680000, "multiplicador": 7.5, "cor": (120,255,20)},
+    {"nome": "Plasma", "preco": 1050000, "multiplicador": 8, "cor": (0,255,220)},
+    {"nome": "Void", "preco": 1600000, "multiplicador": 8.5, "cor": (65,0,110)},
+    {"nome": "Meteorite", "preco": 2200000, "multiplicador": 9, "cor": (110,75,65)},
+    {"nome": "Magma", "preco": 3100000, "multiplicador": 9.5, "cor": (255,75,0)},
+    {"nome": "Crystal", "preco": 4400000, "multiplicador": 10, "cor": (130,220,255)},
+    {"nome": "Ancient Ore", "preco": 6200000, "multiplicador": 10.5, "cor": (180,150,90)},
+    {"nome": "Dragonite", "preco": 8700000, "multiplicador": 11, "cor": (180,20,20)},
+    {"nome": "Celestite", "preco": 12000000, "multiplicador": 11.5, "cor": (255,240,160)},
+    {"nome": "Quantum Ore", "preco": 16500000, "multiplicador": 12, "cor": (0,255,180)},
+    {"nome": "Galactium", "preco": 22500000, "multiplicador": 12.5, "cor": (100,50,220)},
+    {"nome": "Eternium", "preco": 30000000, "multiplicador": 13, "cor": (255,100,200)},
+    {"nome": "Infinity Ore", "preco": 40000000, "multiplicador": 13.5, "cor": (255,255,255)}
+]
 
-''
+if "moedas" not in st.session_state:
+    st.session_state.moedas = 0
+    st.session_state.picaretas_compradas = [0]
+    st.session_state.minerios_comprados = [0]
+    st.session_state.picareta_atual = 0
+    st.session_state.minerio_atual = 0
+    st.session_state.recompensa = 0
 
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
+s = st.session_state
+
+def formatar(valor):
+    return f"{valor:,.1f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+st.markdown("""
+<style>
+.stApp {
+    background: #101014;
+    color: white;
+}
+h1, h2, h3, p, label {
+    color: white !important;
+}
+div.stButton > button {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+.minerio {
+    width: 150px;
+    height: 150px;
+    margin: 15px auto;
+    border-radius: 12px;
+    border: 4px solid #555;
+    box-shadow: 0 0 20px #333;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.title("⛏️ MINING GAME")
+
+st.metric("💰 MOEDAS", "$ " + formatar(s.moedas))
+
+picareta = picaretas[s.picareta_atual]
+minerio = minerios[s.minerio_atual]
+
+r, g, b = minerio["cor"]
+cor_bloco = f"rgb({r},{g},{b})"
+
+st.markdown(
+    f'<div class="minerio" style="background:{cor_bloco}"></div>',
+    unsafe_allow_html=True
 )
 
-''
-''
+st.markdown(
+    f"<center><b>{minerio['nome']}</b></center>",
+    unsafe_allow_html=True
+)
 
+st.markdown(
+    f"<center>⛏️ {picareta['nome']}</center>",
+    unsafe_allow_html=True
+)
 
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
+if st.button("⛏️ MINERAR", use_container_width=True):
+    s.recompensa = picareta["poder"] * minerio["multiplicador"]
+    s.moedas += s.recompensa
+    st.rerun()
 
-st.header(f'GDP in {to_year}', divider='gray')
+if s.recompensa > 0:
+    st.success("+$ " + formatar(s.recompensa))
 
-''
+st.divider()
 
-cols = st.columns(4)
+st.subheader("🛒 SHOP")
 
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
+aba = st.radio(
+    "Categoria",
+    ["Picaretas", "Minérios"],
+    horizontal=True
+)
 
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
+if aba == "Picaretas":
+    opcoes = list(range(1, len(picaretas)))
+    indice = st.selectbox(
+        "Escolha uma picareta",
+        opcoes,
+        format_func=lambda i: picaretas[i]["nome"]
+    )
 
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
+    item = picaretas[indice]
+    st.markdown(f"### {item['nome']}")
+    st.write("⚡ Poder:", item["poder"])
+    st.write("💰 Preço: $", formatar(item["preco"]))
 
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+    if indice in s.picaretas_compradas:
+        if s.picareta_atual == indice:
+            st.success("Picareta equipada")
+        elif st.button("EQUIPAR PICARETA"):
+            s.picareta_atual = indice
+            st.rerun()
+    else:
+        if st.button("COMPRAR PICARETA"):
+            if s.moedas >= item["preco"]:
+                s.moedas -= item["preco"]
+                s.picaretas_compradas.append(indice)
+                s.picareta_atual = indice
+                st.rerun()
+            else:
+                st.error("Moedas insuficientes!")
+
+else:
+    opcoes = list(range(len(minerios)))
+    indice = st.selectbox(
+        "Escolha um minério",
+        opcoes,
+        format_func=lambda i: minerios[i]["nome"]
+    )
+
+    item = minerios[indice]
+    st.markdown(f"### {item['nome']}")
+    st.write("✨ Multiplicador:", str(item["multiplicador"]) + "x")
+    st.write("💰 Preço: $", formatar(item["preco"]))
+
+    if indice in s.minerios_comprados:
+        if s.minerio_atual == indice:
+            st.success("Minério equipado")
+        elif st.button("EQUIPAR MINÉRIO"):
+            s.minerio_atual = indice
+            st.rerun()
+    else:
+        if st.button("COMPRAR MINÉRIO"):
+            if s.moedas >= item["preco"]:
+                s.moedas -= item["preco"]
+                s.minerios_comprados.append(indice)
+                s.minerio_atual = indice
+                st.rerun()
+            else:
+                st.error("Moedas insuficientes!")
+
+st.divider()
+
+st.caption("Mining Game • Versão de navegador")
